@@ -58,4 +58,26 @@ router.post('/login',async(req,res)=>{
     }
 });
 
+//forget password
+router.put('/forget',async(req,res)=>{
+    const email = req.body.email;
+    const newPassword = req.body.password;
+    if(!email|| !newPassword){
+        return res.status(400).json('Error! All fields are required.');
+    }
+    try{
+        const existingUser = await User.findOne({email:email});
+        if(existingUser==null){
+            return res.status(400).json('Error! Enter a valid email.');
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        existingUser.password = hashedPassword;
+        await existingUser.save();
+        return res.status(201).json({success:true});
+    }
+    catch(err){
+        return res.status(501).json(err.message);
+    }
+});
+
 module.exports = router;
